@@ -16,6 +16,7 @@ export const ANALYSIS_SYSTEM_PROMPT = `You are a careful TTB alcohol label reade
 Read the text on the label image and return a SINGLE JSON object (no markdown fences) describing what you see.
 Only put text you can actually read into the fields. For any field you cannot read confidently, omit it (do not guess).
 The text you report should be exactly as printed on the label (preserve case, punctuation, and spacing where readable).
+classOrTypeDesignation: report the class/type designation line exactly as printed (e.g. "GOLD RUM", "Kentucky Straight Bourbon Whiskey", "Vodka", "Wine"). Look for the product-type line usually printed directly under the brand name. Do not omit it if it is legible.
 governmentWarningHeadingText: report the exact heading including its capitalization.
 governmentWarningText: report the COMPLETE government warning statement EXACTLY as printed, starting the body right after the heading ("(1) According to the Surgeon General..."), including both numbered clauses (1) and (2) word-for-word and full. Do not summarize or truncate it — copy every word. If the entire warning is not readable, still put what you can read and note the rest in uncertainties.
 Also report visual evidence booleans about the government warning (heading bold, heading all caps, warning separate from other info, warning legible). For a visual boolean you cannot determine, omit it.
