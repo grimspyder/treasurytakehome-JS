@@ -15,9 +15,10 @@ import sharp from "sharp";
 /**
  * Maximum edge length we keep for a label image. Most labels are readable at
  * this size and it keeps the AI request reasonable. We do not upscale small
- * images.
+ * images. 1200px is enough to read label text while keeping the image tokens
+ * (and thus AI latency) low.
  */
-const MAX_IMAGE_EDGE = 1600;
+const MAX_IMAGE_EDGE = 1200;
 /** JPEG quality used when re-encoding a large png/webp for the request. */
 const JPEG_QUALITY = 85;
 /** Hard cap on a single uploaded image (bytes). */
