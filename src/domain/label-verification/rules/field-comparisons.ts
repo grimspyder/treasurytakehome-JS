@@ -119,11 +119,11 @@ function compareClassOrTypeField(
     expectedNormalized.includes(foundNormalized) ||
     foundNormalized.includes(expectedNormalized)
   ) {
-    // Guard: a substring that is only a few letters long (e.g. expected "rum"
-    // matching found "rumpelstiltskin" is unlikely for labels, but we keep a
-    // short-substring sanity check so we don't over-match tiny fragments).
+    // Guard: a substring that is only a couple of letters long (e.g. expected
+    // "rum" matching found "rumpelstiltskin" is a stretch, but we keep a
+    // short-substring sanity check so we don't over-match fragments like "r").
     const shorter = Math.min(expectedNormalized.length, foundNormalized.length);
-    if (shorter >= 4) {
+    if (shorter >= 3) {
       return "matches";
     }
     return "needs-review";
