@@ -109,7 +109,10 @@ export function normalizeNetContents(value: string): string {
  * Returns null when no percentage can be found.
  */
 export function extractAbvPercentage(value: string): number | null {
-  const cleaned = value.replace(/,/g, ".").toLowerCase();
+  const cleaned = value.replace(/,/g, ".").trim().toLowerCase();
+  if (!cleaned) {
+    return null;
+  }
   const percentageMatch = cleaned.match(/(\d+(?:\.\d+)?)\s*(?:%|percent)/);
   if (percentageMatch) {
     return Number(percentageMatch[1]);
@@ -117,6 +120,11 @@ export function extractAbvPercentage(value: string): number | null {
   const proofMatch = cleaned.match(/(\d+(?:\.\d+)?)\s*proof/);
   if (proofMatch) {
     return Number(proofMatch[1]) / 2;
+  }
+  // A bare number in the alcohol-content field is a valid ABV percentage.
+  const bareNumberMatch = cleaned.match(/^(\d+(?:\.\d+)?)$/);
+  if (bareNumberMatch) {
+    return Number(bareNumberMatch[1]);
   }
   return null;
 }

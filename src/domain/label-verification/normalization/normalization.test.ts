@@ -53,6 +53,11 @@ describe("extractAbvPercentage", () => {
     expect(extractAbvPercentage("8.5% ALC. BY VOL.")).toBeCloseTo(8.5);
   });
 
+  it("treats a bare number as a valid ABV percentage", () => {
+    expect(extractAbvPercentage("40")).toBe(40);
+    expect(extractAbvPercentage(" 45 ")).toBe(45);
+  });
+
   it("returns null when no percentage or proof is present", () => {
     expect(extractAbvPercentage("No alcohol info")).toBeNull();
   });
