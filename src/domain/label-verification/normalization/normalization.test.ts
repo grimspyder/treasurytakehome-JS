@@ -26,6 +26,11 @@ describe("normalizeBrandName", () => {
     );
   });
 
+  it("treats accented and plain spellings as equal (Bacardí vs Bacardi)", () => {
+    expect(normalizeBrandName("Bacardí")).toBe(normalizeBrandName("Bacardi"));
+    expect(normalizeBrandName("José Cuervo")).toBe(normalizeBrandName("Jose Cuervo"));
+  });
+
   it("does NOT collapse different words", () => {
     expect(normalizeBrandName("Old Tom")).not.toBe(normalizeBrandName("Old Man"));
   });

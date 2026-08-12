@@ -20,6 +20,18 @@ export function normalizeCaseInsensitive(value: string): string {
 }
 
 /**
+ * Fold accented characters to their ASCII equivalents so that "Bacardí",
+ * "Bacardi", and "Bacardi" all compare as equal. Most reviewers type in basic
+ * American English characters, and brand names with diacritics (e.g. "José
+ * Cuervo") are commonly spelled without them in applications and searches.
+ * Uses Unicode normalization (NFD) to split accents from base letters, then
+ * removes the combining marks.
+ */
+export function normalizeDiacritics(value: string): string {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
  * Normalize common punctuation for brand-name comparison only. This handles
  * typographic variants of the same name (apostrophes, hyphens, ampersands)
  * while requiring the remaining letters/digits to match exactly.
@@ -27,7 +39,7 @@ export function normalizeCaseInsensitive(value: string): string {
 const PUNCTUATION_NORMALIZATION_PATTERN = /['’`"“”\-–—_.&,()]/g;
 
 export function normalizeBrandName(value: string): string {
-  return normalizeCaseInsensitive(value).replace(
+  return normalizeDiacritics(normalizeCaseInsensitive(value)).replace(
     PUNCTUATION_NORMALIZATION_PATTERN,
     ""
   );
