@@ -39,10 +39,17 @@ export function normalizeDiacritics(value: string): string {
 const PUNCTUATION_NORMALIZATION_PATTERN = /['’`"“”\-–—_.&,()]/g;
 
 export function normalizeBrandName(value: string): string {
-  return normalizeDiacritics(normalizeCaseInsensitive(value)).replace(
-    PUNCTUATION_NORMALIZATION_PATTERN,
-    ""
-  );
+  return normalizeDiacritics(normalizeCaseInsensitive(value))
+    // Remove an ampersand together with any surrounding spaces, so "Smith &
+    // Wesson" and "Smith&Wesson" both become "smithwesson".
+    .replace(/\s*&\s*/g, "")
+    // Treat hyphens as word separators equal to a space, so "Old-Tom" and
+    // "Old Tom" both become "old tom".
+    .replace(/[-–—]/g, " ")
+    .replace(PUNCTUATION_NORMALIZATION_PATTERN, "")
+    // Removing punctuation can leave double spaces; collapse them.
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -170,7 +177,13 @@ export function normalizeCountry(value: string): string {
   return normalizeCaseInsensitive(value);
 }
 
-/** Normalize an address (case + whitespace, collapse repeated spaces). */
+/**
+ * Normalize an address for comparison. Case-fold and remove ALL whitespace so
+ * that spacing differences ("NewProvidence" vs "New Providence") do not cause a
+ * false mismatch, while the actual letters and their order must still match.
+ * This is safe for addresses: it never collapses genuinely different text, it
+ * only ignores how words are spaced.
+ */
 export function normalizeAddress(value: string): string {
-  return normalizeCaseInsensitive(value);
+  return normalizeCaseInsensitive(value).replace(/\s+/g, "");
 }

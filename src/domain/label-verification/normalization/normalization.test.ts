@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractAbvPercentage,
   extractProof,
+  normalizeAddress,
   normalizeBrandName,
   normalizeNetContents,
 } from "./normalization";
@@ -21,9 +22,9 @@ describe("normalizeBrandName", () => {
 
   it("treats punctuation-only differences (&-ampersand, hyphen) as equal", () => {
     expect(normalizeBrandName("Smith & Wesson Whiskey")).toBe(
-      normalizeBrandName("Smith and Wesson Whiskey").replace("and", "") ||
-        normalizeBrandName("Smith&Wesson Whiskey")
+      normalizeBrandName("Smith&Wesson Whiskey")
     );
+    expect(normalizeBrandName("Old-Tom")).toBe(normalizeBrandName("Old Tom"));
   });
 
   it("treats accented and plain spellings as equal (Bacardí vs Bacardi)", () => {
@@ -82,5 +83,13 @@ describe("normalizeNetContents", () => {
     expect(normalizeNetContents("25.4 fl. oz.")).toBe(
       normalizeNetContents("25.4 fl oz")
     );
+  });
+});
+
+describe("normalizeAddress", () => {
+  it("treats spacing differences as equal (NewProvidence vs New Providence)", () => {
+    expect(
+      normalizeAddress("1 Bacardi Road, Nassau, NewProvidence, Bahamas")
+    ).toBe(normalizeAddress("1 Bacardi Road, Nassau, New Providence, Bahamas"));
   });
 });
