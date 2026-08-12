@@ -6,6 +6,7 @@ import { ApplicationInformationForm } from "@/features/label-verification/compon
 import { LabelImageUploader } from "@/features/label-verification/components/label-image-uploader";
 import { VerificationProgress } from "@/features/label-verification/components/verification-progress";
 import { VerificationResults } from "@/features/label-verification/components/verification-results";
+import { BatchVerificationPanel } from "@/features/batch-verification/components/batch-verification-panel";
 
 interface SelectedImage {
   dataUrl: string;
@@ -132,6 +133,10 @@ export default function LabelVerificationHome() {
             </div>
           </>
         )}
+
+        <div style={{ marginTop: "2rem" }}>
+          <BatchVerificationPanel />
+        </div>
       </main>
     </div>
   );
