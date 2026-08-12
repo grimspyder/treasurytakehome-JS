@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { verifySingleLabel } from "../../../features/label-verification/server/verify-single-label";
+import {
+  verifySingleLabel,
+  verificationErrorMessage,
+} from "../../../features/label-verification/server/verify-single-label";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -95,16 +98,16 @@ export async function POST(request: NextRequest) {
       ...verificationOutput,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "An unknown error occurred.";
+    const friendly = verificationErrorMessage(error);
     console.error(
-      JSON.stringify({ event: "verify_failed", requestId, message })
+      JSON.stringify({ event: "verify_failed", requestId, message: friendly.detail ?? friendly.message })
     );
     return NextResponse.json(
       {
         ok: false,
-        error: message,
-        code: "verification-failed",
+        error: friendly.message,
+        code: friendly.code,
+        detail: friendly.detail,
       },
       { status: 500 }
     );
