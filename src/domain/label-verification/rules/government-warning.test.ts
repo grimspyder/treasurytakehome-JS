@@ -1,22 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { verifyGovernmentWarning } from "./government-warning";
 
-const COMPLETE_WARNING =
-  "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not " +
-  "drink alcoholic beverages during pregnancy because of the risk of birth " +
-  "defects. (2) Consumption of alcoholic beverages impairs your ability to " +
-  "drive a car or operate machinery, and may cause health problems.";
+const COMPLETE_WARNING_BODY =
+  "(1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.";
 
 const TRUNCATED_WARNING =
   "(1) According to the Surgeon General, women should not drink alcoholic " +
   "beverages during pregnancy because of the risk of";
 
 describe("verifyGovernmentWarning", () => {
-  it("marks a complete matching warning as matches", () => {
+  it("marks a complete matching warning with visual evidence as matches", () => {
     const result = verifyGovernmentWarning(
       {
-        governmentWarningText:
-          "(1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+        governmentWarningText: COMPLETE_WARNING_BODY,
         governmentWarningHeadingText: "GOVERNMENT WARNING",
       },
       {
@@ -29,6 +25,19 @@ describe("verifyGovernmentWarning", () => {
     );
     expect(result.status).toBe("matches");
     expect(result.requiredWordingStatus).toBe("matches");
+  });
+
+  it("downgrades a wording match to needs-review when all visual evidence is missing (hallucination guard)", () => {
+    const result = verifyGovernmentWarning(
+      {
+        governmentWarningText: COMPLETE_WARNING_BODY,
+        governmentWarningHeadingText: "GOVERNMENT WARNING",
+      },
+      {},
+      "good"
+    );
+    expect(result.requiredWordingStatus).toBe("needs-review");
+    expect(result.reason).toContain("could not confirm visual evidence");
   });
 
   it("flags a missing required phrase as mismatch", () => {
@@ -48,8 +57,7 @@ describe("verifyGovernmentWarning", () => {
     const result = verifyGovernmentWarning(
       {
         governmentWarningHeadingText: "Government Warning",
-        governmentWarningText:
-          "(1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+        governmentWarningText: COMPLETE_WARNING_BODY,
       },
       {},
       "good"
@@ -72,7 +80,7 @@ describe("verifyGovernmentWarning", () => {
   it("returns needs-review when the image is too poor to read", () => {
     const result = verifyGovernmentWarning(
       {
-        governmentWarningText: COMPLETE_WARNING,
+        governmentWarningText: COMPLETE_WARNING_BODY,
         governmentWarningHeadingText: "GOVERNMENT WARNING",
       },
       {},

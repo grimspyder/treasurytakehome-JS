@@ -109,9 +109,16 @@ export function extractAbvPercentage(value: string): number | null {
   return null;
 }
 
-/** Extract a proof number from strings such as "90 Proof" or "80°". Returns null when absent. */
+/**
+ * Extract a proof number from strings such as "90 Proof", "80°", or a bare
+ * number like "80" (when the caller already knows the value is a proof).
+ * Returns null when no number can be found.
+ */
 export function extractProof(value: string): number | null {
-  const cleaned = value.replace(/,/g, ".").toLowerCase();
+  const cleaned = value.replace(/,/g, ".").trim().toLowerCase();
+  if (!cleaned) {
+    return null;
+  }
   const proofMatch = cleaned.match(/(\d+(?:\.\d+)?)\s*proof/);
   if (proofMatch) {
     return Number(proofMatch[1]);
@@ -119,6 +126,11 @@ export function extractProof(value: string): number | null {
   const degreeMatch = cleaned.match(/(\d+(?:\.\d+)?)\s*(?:°|degrees?)/);
   if (degreeMatch) {
     return Number(degreeMatch[1]);
+  }
+  // A bare number in the proof field is a valid proof value.
+  const bareNumberMatch = cleaned.match(/^(\d+(?:\.\d+)?)$/);
+  if (bareNumberMatch) {
+    return Number(bareNumberMatch[1]);
   }
   return null;
 }

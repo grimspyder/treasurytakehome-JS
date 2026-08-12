@@ -1,5 +1,7 @@
 # VeriLabel — AI-Powered Alcohol Label Verification
 
+**Deployed at: https://verilabel-rho.vercel.app**
+
 VeriLabel helps TTB-style compliance reviewers quickly check that the information
 on a beverage label matches the corresponding application. Upload a photo of a
 label (or a whole batch), and VeriLabel uses a fast vision model to read the

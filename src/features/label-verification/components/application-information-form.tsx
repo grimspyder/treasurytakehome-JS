@@ -30,7 +30,10 @@ export function ApplicationInformationForm({
   const [form, setForm] = useState<AlcoholLabelApplicationData>(initialValue);
 
   const updateField = (field: keyof AlcoholLabelApplicationData, value: string) => {
-    const next = { ...form, [field]: value.trim() === "" ? undefined : value.trim() };
+    // Keep the raw value (including trailing spaces) so the user can type
+    // normally — trimming on every keystroke would strip spaces mid-typing.
+    // Only treat an all-whitespace string as empty (undefined).
+    const next = { ...form, [field]: value.trim() === "" ? undefined : value };
     setForm(next);
     onValueChange(next);
   };

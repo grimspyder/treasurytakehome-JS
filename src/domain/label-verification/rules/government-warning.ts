@@ -198,8 +198,6 @@ export function verifyGovernmentWarning(
     extracted.governmentWarningHeadingText
   );
 
-  // A phrasing that clearly misses required words is a hard mismatch; we do
-  // not soften it.
   const capitalizationStatus = compareHeadingCapitalization(
     extracted.governmentWarningHeadingText
   );
@@ -211,13 +209,28 @@ export function verifyGovernmentWarning(
       ? "matches"
       : "unable-to-determine";
 
+  // Hallucination guard: if the model reports the warning text but NONE of the
+  // visual-evidence booleans (bold, separation, legibility) are reported, the
+  // model likely recited the canonical warning from training memory rather than
+  // actually reading it on the label. In that case we cannot confirm the warning
+  // is physically present, so we downgrade a wording "match" to needs-review.
+  const allVisualEvidenceMissing =
+    visual.headingBoldStatus === "unable-to-determine" &&
+    visual.separationStatus === "unable-to-determine" &&
+    visual.legibilityStatus === "unable-to-determine";
+
+  const adjustedWordingStatus: VerificationStatus =
+    wordingStatus === "matches" && allVisualEvidenceMissing
+      ? "needs-review"
+      : wordingStatus;
+
   // If the image is too poor to read the warning, we cannot certify wording
   // or formatting; surface Needs Review.
   const poorImageForcesReview =
     imageQuality === "poor" || imageQuality === "insufficient";
 
   const statuses = [
-    wordingStatus,
+    adjustedWordingStatus,
     capitalizationStatus,
     visual.headingBoldStatus,
     visual.separationStatus,
@@ -230,7 +243,7 @@ export function verifyGovernmentWarning(
     : foldIntoOverall(statuses);
 
   const parts: Array<{ label: string; status: VerificationStatus }> = [
-    { label: "Wording", status: wordingStatus },
+    { label: "Wording", status: adjustedWordingStatus },
     { label: "Heading capitalization", status: capitalizationStatus },
     { label: "Heading bold", status: visual.headingBoldStatus },
     { label: "Presence", status: presenceStatus },
@@ -238,10 +251,15 @@ export function verifyGovernmentWarning(
     { label: "Separation from other info", status: visual.separationStatus },
   ];
 
+  const hallucinationReason =
+    adjustedWordingStatus === "needs-review" && allVisualEvidenceMissing
+      ? "The AI found matching warning text but could not confirm visual evidence (bold, separation, legibility) that the warning is actually on this label. Please review the label manually."
+      : undefined;
+
   return {
     fieldName: "Government Health Warning",
     status: overallStatus,
-    requiredWordingStatus: wordingStatus,
+    requiredWordingStatus: adjustedWordingStatus,
     headingCapitalizationStatus: capitalizationStatus,
     headingBoldStatus: visual.headingBoldStatus,
     presenceStatus,
@@ -251,7 +269,7 @@ export function verifyGovernmentWarning(
     found: extracted.governmentWarningText ?? extracted.governmentWarningHeadingText,
     reason: poorImageForcesReview
       ? "The image quality is too low to reliably read the government warning. Please review manually or upload a clearer image."
-      : buildGovernmentWarningReason(parts),
+      : hallucinationReason ?? buildGovernmentWarningReason(parts),
   };
 }
 
