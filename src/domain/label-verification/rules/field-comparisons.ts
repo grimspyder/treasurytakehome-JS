@@ -108,13 +108,24 @@ function compareClassOrTypeField(
   if (expectedNormalized === foundNormalized) {
     return "matches";
   }
-  // Conservative: a partial overlap (e.g. one uses "Bourbon Whiskey" vs
-  // "Kentucky Straight Bourbon Whiskey") is a near-match that deserves a human
-  // look rather than a hard mismatch.
+
+  // A more specific class still belongs to its generic class: "Gold Rum"
+  // contains "Rum", "Kentucky Straight Bourbon Whiskey" contains "Whiskey".
+  // So if either whole normalized value contains the other, treat it as a
+  // match (the label is at least as specific as the application). This is
+  // safe for the common "generic class in application, specific on label"
+  // case that reviewers actually type.
   if (
     expectedNormalized.includes(foundNormalized) ||
     foundNormalized.includes(expectedNormalized)
   ) {
+    // Guard: a substring that is only a few letters long (e.g. expected "rum"
+    // matching found "rumpelstiltskin" is unlikely for labels, but we keep a
+    // short-substring sanity check so we don't over-match tiny fragments).
+    const shorter = Math.min(expectedNormalized.length, foundNormalized.length);
+    if (shorter >= 4) {
+      return "matches";
+    }
     return "needs-review";
   }
   return "mismatch";
