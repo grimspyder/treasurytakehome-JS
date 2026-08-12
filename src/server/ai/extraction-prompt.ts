@@ -17,6 +17,7 @@ Read the text on the label image and return a SINGLE JSON object (no markdown fe
 Only put text you can actually read into the fields. For any field you cannot read confidently, omit it (do not guess).
 The text you report should be exactly as printed on the label (preserve case, punctuation, and spacing where readable).
 governmentWarningHeadingText: report the exact heading including its capitalization.
+governmentWarningText: report the COMPLETE government warning statement EXACTLY as printed, starting the body right after the heading ("(1) According to the Surgeon General..."), including both numbered clauses (1) and (2) word-for-word and full. Do not summarize or truncate it — copy every word. If the entire warning is not readable, still put what you can read and note the rest in uncertainties.
 Also report visual evidence booleans about the government warning (heading bold, heading all caps, warning separate from other info, warning legible). For a visual boolean you cannot determine, omit it.
 Report imageQuality as one of: good, usable, poor, insufficient.
 Report overallExtractionConfidence as a number 0-1 and uncertainties as an array of short strings describing anything you could not read confidently.

@@ -39,7 +39,12 @@ function normalizeWarningText(value: string): string {
     .replace(/[\u2018\u2019]/g, "'")
     .replace(/[\u201C\u201D]/g, '"')
     .replace(/[\u2010\u2011\u2012\u2013\u2014]/g, "-");
-  return normalizeWhitespace(withNormalizedQuotes).toLowerCase();
+  // The heading "GOVERNMENT WARNING" and the body may be returned as separate
+  // fields, so the colon that separates them in the canonical text can end up
+  // either present or absent. Since a colon appears nowhere else in the warning
+  // body, stripping colons from both sides makes the comparison robust without
+  // losing any meaningful character.
+  return normalizeWhitespace(withNormalizedQuotes).replace(/:/g, "").toLowerCase();
 }
 
 function isStatusNeedsReview(status: VerificationStatus): boolean {
@@ -59,6 +64,11 @@ function foldIntoOverall(statuses: VerificationStatus[]): VerificationStatus {
 /**
  * Check whether the extracted text contains a semantically identical warning
  * through normalization that only removes whitespace and typographic variants.
+ *
+ * Because vision models sometimes truncate a long warning rather than report a
+ * real violation, an incomplete-but-substantially-matching body is returned as
+ * Needs Review (we cannot prove the label is wrong, only that we could not
+ * confirm the full wording). A clearly short or divergent body is a mismatch.
  */
 function compareRequiredWording(
   extractedWarningText: string | undefined,
@@ -67,17 +77,48 @@ function compareRequiredWording(
   if (!extractedWarningText && !headingText) {
     return "unable-to-determine";
   }
-  const combined = [extractedWarningText, headingText]
+  // The canonical warning is "GOVERNMENT WARNING: (1) ... " with the heading
+  // first, so concatenate heading before body for the includes comparison.
+  const combined = [headingText, extractedWarningText]
     .filter(Boolean)
     .join(" ");
   const normalizedExtracted = normalizeWarningText(combined);
   const normalizedRequired = normalizeWarningText(REQUIRED_GOVERNMENT_WARNING);
-  // The extracted text must contain the full required statement. Extra leading
-  // number tags like "(1)" are tolerated only if the required wording is fully
-  // present.
-  return normalizedExtracted.includes(normalizedRequired)
-    ? "matches"
-    : "mismatch";
+
+  if (normalizedExtracted.includes(normalizedRequired)) {
+    return "matches";
+  }
+
+  // The heading is validated separately (compareHeadingCapitalization), so for
+  // detecting a plausible truncation we compare the body only. Remove the
+  // leading "government warning" from both sides and check how much of the
+  // required body the extracted text reproduces from the start.
+  const requiredBody = normalizedRequired.replace(/^government warning/, "").trim();
+  // Extract the extracted text's body: drop a leading "government warning" if
+  // present, then compare its prefix against the required body.
+  const extractedBody = normalizedExtracted
+    .replace(/^government warning/, "")
+    .trim();
+
+  let sharedPrefixLength = 0;
+  const limit = Math.min(extractedBody.length, requiredBody.length);
+  while (
+    sharedPrefixLength < limit &&
+    extractedBody[sharedPrefixLength] === requiredBody[sharedPrefixLength]
+  ) {
+    sharedPrefixLength++;
+  }
+
+  // A long shared prefix means the model likely truncated the tail rather than
+  // reporting a genuinely different warning. 0.35 is a conservative bar: a copy
+  // that reproduces at least a third of the required body verbatim from the
+  // start is far more plausibly a truncated read than a real alternate wording.
+  const bodyPrefixRatio = sharedPrefixLength / requiredBody.length;
+  if (bodyPrefixRatio >= 0.35) {
+    return "needs-review";
+  }
+
+  return "mismatch";
 }
 
 /**

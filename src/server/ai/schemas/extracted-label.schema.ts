@@ -51,7 +51,7 @@ export const ExtractedLabelSchema = z
     overallExtractionConfidence: z.number().optional(),
     uncertainties: z.array(z.string()).optional(),
   })
-  .strict();
+  .strip();
 
 /** The shape the provider is asked to return (for prompt construction). */
 export type ExtractedLabelModelOutput = z.infer<typeof ExtractedLabelSchema>;
