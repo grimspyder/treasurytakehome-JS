@@ -126,6 +126,9 @@ export function LabelImageUploader({
         </label>
       ) : (
         <div className="upload-preview">
+          {/* next/image cannot optimize base64 data-URL images from local uploads,
+              so a native img is correct here and avoids an extra network fetch. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={previewUrl}
             alt="Label preview"

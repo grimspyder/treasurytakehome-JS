@@ -108,7 +108,7 @@ export function VerificationResults({ summary, imageUrl }: VerificationResultsPr
               Image quality: <StatusChip status={summary.imageQuality} label={formatImageQuality(summary.imageQuality)} />
               {summary.uncertainties && summary.uncertainties.length > 0 && (
                 <span style={{ display: "block", marginTop: "0.4rem" }}>
-                  <em>Couldn't fully read:</em> {summary.uncertainties.join("; ")}
+                  <em>Couldn&apos;t fully read:</em> {summary.uncertainties.join("; ")}
                 </span>
               )}
             </p>
@@ -133,6 +133,8 @@ export function VerificationResults({ summary, imageUrl }: VerificationResultsPr
         {imageUrl && (
           <div className="card">
             <h2>Label under review</h2>
+            {/* next/image cannot optimize base64 data-URL images from local uploads. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}
               alt="The label being verified"
