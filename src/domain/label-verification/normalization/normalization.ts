@@ -85,7 +85,7 @@ export function normalizeNetContents(value: string): string {
   if (!match) {
     return cleaned.toLowerCase();
   }
-  const [_, valuePart, unitPart] = match;
+  const [, valuePart, unitPart] = match;
   const unitKey = unitPart.trim().toLowerCase();
   const normalizedUnit = UNIT_ALIASES[unitKey] ?? unitKey;
   return `${valuePart.trim()} ${normalizedUnit}`;

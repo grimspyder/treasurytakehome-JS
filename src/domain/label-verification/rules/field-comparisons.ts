@@ -8,7 +8,6 @@
  */
 
 import {
-  FieldComparisonInput,
   LabelFieldVerificationResult,
   VerificationStatus,
 } from "../models/types";
@@ -119,36 +118,6 @@ function compareClassOrTypeField(
     return "needs-review";
   }
   return "mismatch";
-}
-
-function compareCountryField(
-  expected: string | undefined,
-  found: string | undefined
-): VerificationStatus {
-  if (!expected && !found) {
-    return "unable-to-determine";
-  }
-  if (!expected || !found) {
-    return "needs-review";
-  }
-  return normalizeCountry(expected) === normalizeCountry(found)
-    ? "matches"
-    : "mismatch";
-}
-
-function compareProducerAddressField(
-  expected: string | undefined,
-  found: string | undefined
-): VerificationStatus {
-  if (!expected && !found) {
-    return "unable-to-determine";
-  }
-  if (!expected || !found) {
-    return "needs-review";
-  }
-  return normalizeAddress(expected) === normalizeAddress(found)
-    ? "matches"
-    : "mismatch";
 }
 
 /**

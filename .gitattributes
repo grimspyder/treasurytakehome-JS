@@ -1,0 +1,3 @@
+# Normalize line endings so files are stored as LF in the repo
+# and checked out as native (CRLF on Windows) in working copies.
+* text=auto
